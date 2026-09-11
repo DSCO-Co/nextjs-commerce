@@ -1,75 +1,91 @@
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fcommerce&project-name=commerce&repo-name=commerce&demo-title=Next.js%20Commerce&demo-url=https%3A%2F%2Fdemo.vercel.store&demo-image=https%3A%2F%2Fbigcommerce-demo-asset-ksvtgfvnd.vercel.app%2Fbigcommerce.png&products=%255B%257B%2522type%2522%253A%2522integration%2522%252C%2522protocol%2522%253A%2522other%2522%252C%2522productSlug%2522%253A%2522shopify%2522%252C%2522integrationSlug%2522%253A%2522shopify%2522%257D%255D&env=COMPANY_NAME,SITE_NAME)
+# Next.js Commerce on the dsco commerce platform
 
-# Next.js Commerce
+[Vercel's Next.js Commerce](https://github.com/vercel/commerce) template running on
+the dsco/Flightdeck commerce platform instead of Shopify, via the published
+[`@dscodotco/sdk`](https://www.npmjs.com/package/@dscodotco/sdk) storefront client.
 
-A high-performance, server-rendered Next.js App Router ecommerce application.
+This is a fork of `vercel/commerce` (MIT, Copyright (c) 2025 Vercel, Inc. — see
+[license.md](license.md)). The UI, routing, and server-component architecture are
+Vercel's; the only structural change is the commerce provider.
 
-This template uses React Server Components, Server Actions, `Suspense`, `useOptimistic`, and more.
+> Status: this demo goes fully live when the platform's public API surface
+> (`https://api.ruo.pro/v1/...`) deploys. Until then the app builds and runs, but
+> catalog reads against the demo tenant will fail at request time. The repo is
+> published ahead of that so the integration diff is reviewable.
 
-<h3 id="v1-note"></h3>
+## The provider swap
 
-> Note: Looking for Next.js Commerce v1? View the [code](https://github.com/vercel/commerce/tree/v1), [demo](https://commerce-v1.vercel.store), and [release notes](https://github.com/vercel/commerce/releases/tag/v1).
+Next.js Commerce isolates its backend in `lib/shopify`. This fork deletes that
+directory and drops in [`lib/flightdeck`](lib/flightdeck) — a provider that exports
+the same function names, signatures, and normalized return types (`Product`,
+`Cart`, `Collection`, `Menu`, `Page`, ...), backed by `@dscodotco/sdk`. Every
+`from "lib/shopify"` import was repointed to `lib/flightdeck`; no component or
+route markup changed.
 
-## Providers
+What differs beyond the mechanical swap:
 
-Vercel will only be actively maintaining a Shopify version [as outlined in our vision and strategy for Next.js Commerce](https://github.com/vercel/commerce/pull/966).
+- Cart: Flightdeck has no server-side cart or hosted checkout. The cart is a
+  cookie-backed local cart, re-priced from the live catalog on every read
+  (no prices are stored client-side). `cart.checkoutUrl` points at a first-party
+  [`/api/checkout`](app/api/checkout/route.ts) route that submits the order in one
+  shot; a real store owns the payment-form UI in front of it.
+- Rendering: the app is fully dynamic (`force-dynamic`, PPR off) — catalog reads
+  hit the API at request time, so the build needs no network access and catalog
+  changes show up immediately.
+- Env validation now checks the Flightdeck variables instead of Shopify's.
 
-Vercel is happy to partner and work with any commerce provider to help them get a similar template up and running and listed below. Alternative providers should be able to fork this repository and swap out the `lib/shopify` file with their own implementation while leaving the rest of the template mostly unchanged.
+The full function-by-function mapping table, the cookie-cart design, and the
+normalized-type notes live in [`lib/flightdeck/README.md`](lib/flightdeck/README.md).
 
-- Shopify (this repository)
-- [BigCommerce](https://github.com/bigcommerce/nextjs-commerce) ([Demo](https://next-commerce-v2.vercel.app/))
-- [Ecwid by Lightspeed](https://github.com/Ecwid/ecwid-nextjs-commerce/) ([Demo](https://ecwid-nextjs-commerce.vercel.app/))
-- [Geins](https://github.com/geins-io/vercel-nextjs-commerce) ([Demo](https://geins-nextjs-commerce-starter.vercel.app/))
-- [Medusa](https://github.com/medusajs/vercel-commerce) ([Demo](https://medusa-nextjs-commerce.vercel.app/))
-- [Prodigy Commerce](https://github.com/prodigycommerce/nextjs-commerce) ([Demo](https://prodigy-nextjs-commerce.vercel.app/))
-- [Saleor](https://github.com/saleor/nextjs-commerce) ([Demo](https://saleor-commerce.vercel.app/))
-- [Shopware](https://github.com/shopwareLabs/vercel-commerce) ([Demo](https://shopware-vercel-commerce-react.vercel.app/))
-- [Swell](https://github.com/swellstores/verswell-commerce) ([Demo](https://verswell-commerce.vercel.app/))
-- [Umbraco](https://github.com/umbraco/Umbraco.VercelCommerce.Demo) ([Demo](https://vercel-commerce-demo.umbraco.com/))
-- [Wix](https://github.com/wix/headless-templates/tree/main/nextjs/commerce) ([Demo](https://wix-nextjs-commerce.vercel.app/))
-- [Fourthwall](https://github.com/FourthwallHQ/vercel-commerce) ([Demo](https://vercel-storefront.fourthwall.app/))
+## Environment
 
-> Note: Providers, if you are looking to use similar products for your demo, you can [download these assets](https://drive.google.com/file/d/1q_bKerjrwZgHwCw0ovfUMW6He9VtepO_/view?usp=sharing).
+Copy [.env.example](.env.example) to `.env.local`. All values are read server-side
+only; nothing is prefixed `NEXT_PUBLIC_`.
 
-## Integrations
+| Variable                      | What it is                                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `FLIGHTDECK_API_URL`          | The commerce API origin the store reads catalog from and places orders against (`https://api.ruo.pro`). |
+| `FLIGHTDECK_TENANT`           | The tenant this deployment serves. The public demo uses `ruo-demo`.                                     |
+| `FLIGHTDECK_STOREFRONT_TOKEN` | The tenant-scoped storefront credential. Secret — server-side only.                                     |
+| `SITE_NAME`, `COMPANY_NAME`   | Optional template branding (unchanged from upstream).                                                   |
 
-Integrations enable upgraded or additional functionality for Next.js Commerce
+## Honest gaps
 
-- [Orama](https://github.com/oramasearch/nextjs-commerce) ([Demo](https://vercel-commerce.oramasearch.com/))
+The adapter documents what it does not back rather than faking it:
 
-  - Upgrades search to include typeahead with dynamic re-rendering, vector-based similarity search, and JS-based configuration.
-  - Search runs entirely in the browser for smaller catalogs or on a CDN for larger.
-
-- [React Bricks](https://github.com/ReactBricks/nextjs-commerce-rb) ([Demo](https://nextjs-commerce.reactbricks.com/))
-  - Edit pages, product details, and footer content visually using [React Bricks](https://www.reactbricks.com) visual headless CMS.
+- `getProductRecommendations` is naive — "other products" minus the current one.
+  There is no recommender yet.
+- `getPage` / `getPages` return empty. Merchant-authored content exists on the
+  platform (the store manifest), but mapping it into CMS-style pages is pending;
+  the adapter returns honest absence instead of inventing a CMS. `/[page]` routes
+  404 for now.
+- `revalidate` is a no-op — the platform emits no catalog webhook yet, so
+  `/api/revalidate` returns 200 without revalidating anything.
+- Product `updatedAt` is empty, image dimensions are `0` (opaque asset refs), and
+  options are synthesized from variant labels. Details in
+  [`lib/flightdeck/README.md`](lib/flightdeck/README.md#known-gaps-documented-not-faked).
 
 ## Running locally
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js Commerce. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/concepts/projects/environment-variables) for this, but a `.env` file is all that is necessary.
-
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control your Shopify store.
-
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
-
 ```bash
 pnpm install
+cp .env.example .env.local   # fill in your tenant + storefront token
 pnpm dev
 ```
 
-Your app should now be running on [localhost:3000](http://localhost:3000/).
+The app runs on [localhost:3000](http://localhost:3000/). `pnpm build` needs no
+network access — all catalog reads happen at request time.
 
-<details>
-  <summary>Expand if you work at Vercel and want to run locally and / or contribute</summary>
+## Related
 
-1. Run `vc link`.
-1. Select the `Vercel Solutions` scope.
-1. Connect to the existing `commerce-shopify` project.
-1. Run `vc env pull` to get environment variables.
-1. Run `pnpm dev` to ensure everything is working correctly.
-</details>
+- [`@dscodotco/sdk`](https://www.npmjs.com/package/@dscodotco/sdk) — the typed
+  storefront/operator client this provider is built on.
+- [DSCO-Co/storefront-starter](https://github.com/DSCO-Co/storefront-starter) — a
+  from-scratch starter storefront on the same SDK, if you would rather not carry
+  the Next.js Commerce template.
 
-## Vercel, Next.js Commerce, and Shopify Integration Guide
+## Attribution and license
 
-You can use this comprehensive [integration guide](https://vercel.com/docs/integrations/ecommerce/shopify) with step-by-step instructions on how to configure Shopify as a headless CMS using Next.js Commerce as your headless Shopify storefront on Vercel.
+Forked from [vercel/commerce](https://github.com/vercel/commerce). Released under
+the [MIT License](license.md), Copyright (c) 2025 Vercel, Inc. Modifications
+(the Flightdeck provider and this README) are also MIT.

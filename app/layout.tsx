@@ -2,13 +2,18 @@ import { CartProvider } from "components/cart/cart-context";
 import { Navbar } from "components/layout/navbar";
 import { WelcomeToast } from "components/welcome-toast";
 import { GeistSans } from "geist/font/sans";
-import { getCart } from "lib/shopify";
+import { getCart } from "lib/flightdeck";
 import { ReactNode } from "react";
 import { Toaster } from "sonner";
 import "./globals.css";
 import { baseUrl } from "lib/utils";
 
 const { SITE_NAME } = process.env;
+
+// Render everything at request time. The Flightdeck catalog is read live on
+// each request (no build-time prerender against the API), so the site builds
+// without network access and picks up catalog changes immediately.
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   metadataBase: new URL(baseUrl),
