@@ -33,6 +33,7 @@ function multiVariantProduct(): StorefrontProduct {
     description: "A research peptide.",
     status: "active",
     image_asset_ref: "https://cdn.example.com/peptide-x.png",
+    image_url: "https://cdn.example.com/peptide-x.png",
     is_subscription: false,
     subscription_interval: null,
     subscription_interval_count: null,

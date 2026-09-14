@@ -384,7 +384,9 @@ function buildCartItem(
         id: product.id,
         handle: product.slug,
         title: product.name,
-        featuredImage: mapImage(product.image_asset_ref, product.name),
+        featuredImage: product.image_url
+          ? { url: product.image_url, altText: product.name, width: 1024, height: 1024 }
+          : mapImage(product.image_asset_ref, product.name),
       },
     },
   };

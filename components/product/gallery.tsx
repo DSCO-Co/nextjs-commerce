@@ -45,7 +45,7 @@ export function Gallery({
 
         {images.length > 1 ? (
           <div className="absolute bottom-[15%] flex w-full justify-center">
-            <div className="mx-auto flex h-11 items-center rounded-full border border-white bg-neutral-50/80 text-neutral-500 backdrop-blur-sm dark:border-black dark:bg-neutral-900/80">
+            <div className="mx-auto flex h-11 items-center rounded-full border border-ink-line bg-ink/80 text-mute backdrop-blur-sm">
               <button
                 formAction={() => updateImage(previousImageIndex.toString())}
                 aria-label="Previous product image"
@@ -53,7 +53,7 @@ export function Gallery({
               >
                 <ArrowLeftIcon className="h-5" />
               </button>
-              <div className="mx-1 h-6 w-px bg-neutral-500"></div>
+              <div className="mx-1 h-6 w-px bg-ink-line"></div>
               <button
                 formAction={() => updateImage(nextImageIndex.toString())}
                 aria-label="Next product image"

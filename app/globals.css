@@ -3,20 +3,61 @@
 @plugin "@tailwindcss/container-queries";
 @plugin "@tailwindcss/typography";
 
+/* Force the template's dark treatment on always — this store commits to the dark lab look, so `dark:` utilities must apply regardless of OS preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * RUO Pro headless storefront — clinical-editorial identity.
+ * Ink/paper/reagent-teal, mono-as-lab-readout, chromatogram signature.
+ * Deliberately dark-first and premium; the light side stays legible but
+ * the store's world (dark lab, luminous reagent) is the committed look.
+ */
+@theme {
+  --color-ink: #0b0b0e;
+  --color-ink-raised: #131318;
+  --color-ink-line: #23232b;
+  --color-paper: #f5f3ee;
+  --color-mute: #9a9aa4;
+  --color-mute-deep: #6a6a74;
+  --color-reagent: #16b8a6;
+  --color-reagent-deep: #0e9e8e;
+  --color-violet: #6254ff;
+
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+}
+
 @layer base {
   *,
   ::after,
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
+    border-color: var(--color-ink-line, currentColor);
+  }
+  html {
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-sans);
+  }
+  ::selection {
+    background: var(--color-reagent);
+    color: var(--color-ink);
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+/* Focus ring tuned to the dark ground. */
+a,
+input,
+button,
+select,
+textarea {
+  @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[color:var(--color-reagent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--color-ink)];
 }
 
 @supports (font: -apple-system-body) and (-webkit-appearance: none) {
@@ -25,8 +66,99 @@
   }
 }
 
-a,
-input,
-button {
-  @apply focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-neutral-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-50 dark:focus-visible:ring-neutral-600 dark:focus-visible:ring-offset-neutral-900;
+/* ── Type roles ─────────────────────────────────────────────────────────── */
+.font-display {
+  font-family: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-reagent);
+}
+.data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Signature: the HPLC chromatogram trace ─────────────────────────────── */
+.chromatogram {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.chromatogram path {
+  fill: none;
+  stroke: var(--color-reagent);
+  stroke-width: 1.25;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-reagent) 55%, transparent));
+  stroke-dasharray: 2600;
+  stroke-dashoffset: 2600;
+  animation: trace 3.2s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+}
+.chromatogram .baseline {
+  stroke: var(--color-ink-line);
+  stroke-width: 1;
+  filter: none;
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
+  animation: none;
+}
+@keyframes trace {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Reveal-on-load for the hero copy. */
+.reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: reveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.reveal-1 { animation-delay: 0.05s; }
+.reveal-2 { animation-delay: 0.18s; }
+.reveal-3 { animation-delay: 0.31s; }
+.reveal-4 { animation-delay: 0.44s; }
+@keyframes reveal {
+  to { opacity: 1; transform: none; }
+}
+
+/* Reagent underline for links/CTAs. */
+.link-reagent {
+  background-image: linear-gradient(var(--color-reagent), var(--color-reagent));
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.link-reagent:hover {
+  background-size: 100% 1px;
+}
+
+/* Fine grain overlay for premium depth. */
+.grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chromatogram path,
+  .reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    stroke-dashoffset: 0;
+  }
 }

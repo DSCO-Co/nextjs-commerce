@@ -1,10 +1,11 @@
-import { Carousel } from "components/carousel";
-import { ThreeItemGrid } from "components/grid/three-items";
+import { Hero } from "components/hero";
 import Footer from "components/layout/footer";
+import { ProductShowcase } from "components/product-showcase";
+import { VerifiedBand } from "components/verified-band";
 
 export const metadata = {
   description:
-    "High-performance ecommerce store built with Next.js, Vercel, and Shopify.",
+    "Research-grade peptides with a certificate of analysis on every lot. A headless storefront running on the dsco commerce API.",
   openGraph: {
     type: "website",
   },
@@ -13,8 +14,9 @@ export const metadata = {
 export default function HomePage() {
   return (
     <>
-      <ThreeItemGrid />
-      <Carousel />
+      <Hero />
+      <ProductShowcase />
+      <VerifiedBand />
       <Footer />
     </>
   );

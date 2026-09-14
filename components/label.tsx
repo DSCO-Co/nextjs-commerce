@@ -15,23 +15,21 @@ const Label = ({
   return (
     <div
       className={clsx(
-        "absolute bottom-0 left-0 flex w-full px-4 pb-4 @container/label",
+        "absolute bottom-0 left-0 flex w-full items-end justify-between gap-3 p-4 @container/label",
         {
-          "lg:px-20 lg:pb-[35%]": position === "center",
+          "lg:p-6": position === "center",
         },
       )}
     >
-      <div className="flex items-center rounded-full border bg-white/70 p-1 text-xs font-semibold text-black backdrop-blur-md dark:border-neutral-800 dark:bg-black/70 dark:text-white">
-        <h3 className="mr-4 line-clamp-2 grow pl-2 leading-none tracking-tight">
-          {title}
-        </h3>
-        <Price
-          className="flex-none rounded-full bg-blue-600 p-2 text-white"
-          amount={amount}
-          currencyCode={currencyCode}
-          currencyCodeClassName="hidden @[275px]/label:inline"
-        />
-      </div>
+      <h3 className="font-display line-clamp-2 text-sm font-medium leading-tight tracking-tight text-paper">
+        {title}
+      </h3>
+      <Price
+        className="data flex-none border border-ink-line bg-ink/80 px-2.5 py-1 text-xs text-reagent backdrop-blur-md"
+        amount={amount}
+        currencyCode={currencyCode}
+        currencyCodeClassName="hidden @[275px]/label:inline text-mute-deep"
+      />
     </div>
   );
 };

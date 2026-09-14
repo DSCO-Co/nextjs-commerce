@@ -1,5 +1,4 @@
 import CartModal from "components/cart/modal";
-import LogoSquare from "components/logo-square";
 import { getMenu } from "lib/flightdeck";
 import { Menu } from "lib/flightdeck/types";
 import Link from "next/link";
@@ -13,32 +12,36 @@ export async function Navbar() {
   const menu = await getMenu("next-js-frontend-header-menu");
 
   return (
-    <nav className="relative flex items-center justify-between p-4 lg:px-6">
+    <nav className="sticky top-0 z-40 flex items-center justify-between border-b border-ink-line bg-ink/80 px-6 py-4 backdrop-blur-md">
       <div className="block flex-none md:hidden">
         <Suspense fallback={null}>
           <MobileMenu menu={menu} />
         </Suspense>
       </div>
       <div className="flex w-full items-center">
-        <div className="flex w-full md:w-1/3">
+        <div className="flex w-full items-center md:w-1/3">
           <Link
             href="/"
             prefetch={true}
-            className="mr-2 flex w-full items-center justify-center md:w-auto lg:mr-6"
+            className="mr-6 flex items-center gap-2.5"
+            aria-label={SITE_NAME}
           >
-            <LogoSquare />
-            <div className="ml-2 flex-none text-sm font-medium uppercase md:hidden lg:block">
-              {SITE_NAME}
-            </div>
+            <span
+              aria-hidden
+              className="inline-block h-2 w-2 rounded-full bg-reagent shadow-[0_0_10px_var(--color-reagent)]"
+            />
+            <span className="font-display text-sm font-semibold tracking-tight">
+              RUO&nbsp;<span className="text-reagent">Pro</span>
+            </span>
           </Link>
           {menu.length ? (
-            <ul className="hidden gap-6 text-sm md:flex md:items-center">
+            <ul className="hidden items-center gap-6 md:flex">
               {menu.map((item: Menu) => (
                 <li key={item.title}>
                   <Link
                     href={item.path}
                     prefetch={true}
-                    className="text-neutral-500 underline-offset-4 hover:text-black hover:underline dark:text-neutral-400 dark:hover:text-neutral-300"
+                    className="data text-xs uppercase tracking-widest text-mute transition-colors hover:text-paper"
                   >
                     {item.title}
                   </Link>
