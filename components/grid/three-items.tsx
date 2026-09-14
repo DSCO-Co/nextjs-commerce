@@ -1,5 +1,5 @@
 import { GridTileImage } from "components/grid/tile";
-import { getCollectionProducts } from "lib/flightdeck";
+import { getCollectionProducts, getProducts } from "lib/flightdeck";
 import type { Product } from "lib/flightdeck/types";
 import Link from "next/link";
 
@@ -49,9 +49,14 @@ function ThreeItemGridItem({
 
 export async function ThreeItemGrid() {
   // Collections that start with `hidden-*` are hidden from the search page.
-  const homepageItems = await getCollectionProducts({
+  // Flightdeck: the Shopify-convention hidden collection may not exist on a
+  // tenant; an empty homepage is worse than an honest fallback to the catalog.
+  let homepageItems = await getCollectionProducts({
     collection: "hidden-homepage-featured-items",
   });
+  if (!homepageItems.length) {
+    homepageItems = await getProducts({});
+  }
 
   if (!homepageItems[0] || !homepageItems[1] || !homepageItems[2]) return null;
 

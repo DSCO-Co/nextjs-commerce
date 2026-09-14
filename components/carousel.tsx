@@ -1,12 +1,17 @@
-import { getCollectionProducts } from "lib/flightdeck";
+import { getCollectionProducts, getProducts } from "lib/flightdeck";
 import Link from "next/link";
 import { GridTileImage } from "./grid/tile";
 
 export async function Carousel() {
   // Collections that start with `hidden-*` are hidden from the search page.
-  const products = await getCollectionProducts({
+  // Same Flightdeck fallback as the featured grid: carousel from the catalog
+  // when the hidden collection is absent (skip the grid's first three).
+  let products = await getCollectionProducts({
     collection: "hidden-homepage-carousel",
   });
+  if (!products.length) {
+    products = (await getProducts({})).slice(3);
+  }
 
   if (!products?.length) return null;
 
