@@ -290,7 +290,13 @@ export function mapProduct(product: StorefrontProduct): Product {
       : [];
 
   const description = product.description ?? "";
-  const featuredImage = mapImage(product.image_asset_ref, product.name);
+  // Demo asset fallback: Flightdeck's demo catalog carries no image refs yet
+  // (media pipeline pending), so fall back to a bundled per-handle product
+  // image shipped in /public/products. A real store's image_asset_ref wins.
+  const localAsset = `/products/${product.slug}.png`;
+  const featuredImage = product.image_asset_ref
+    ? mapImage(product.image_asset_ref, product.name)
+    : { url: localAsset, altText: product.name, width: 1024, height: 1024 };
 
   return {
     id: product.id,
@@ -306,7 +312,7 @@ export function mapProduct(product: StorefrontProduct): Product {
     },
     variants,
     featuredImage,
-    images: product.image_asset_ref ? [featuredImage] : [],
+    images: [featuredImage],
     seo: { title: product.name, description },
     tags: product.is_subscription ? ["subscription"] : [],
     updatedAt: "",
