@@ -1,4 +1,4 @@
 allowBuilds:
   sharp: true
 minimumReleaseAgeExclude:
-  - "@dscodotco/sdk@0.0.1"
+  - '@dscodotco/sdk@0.0.1 || 0.0.3'

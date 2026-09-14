@@ -290,13 +290,16 @@ export function mapProduct(product: StorefrontProduct): Product {
       : [];
 
   const description = product.description ?? "";
-  // Demo asset fallback: Flightdeck's demo catalog carries no image refs yet
-  // (media pipeline pending), so fall back to a bundled per-handle product
-  // image shipped in /public/products. A real store's image_asset_ref wins.
-  const localAsset = `/products/${product.slug}.png`;
-  const featuredImage = product.image_asset_ref
-    ? mapImage(product.image_asset_ref, product.name)
-    : { url: localAsset, altText: product.name, width: 1024, height: 1024 };
+  // Prefer the API's resolved `image_url` (the platform now returns a fetchable
+  // URL alongside the opaque ref). Fall back to resolving the ref ourselves,
+  // then to a bundled per-handle image so a demo tenant without assets still
+  // renders. A real store's API image_url wins in every case.
+  const apiUrl = product.image_url ?? null;
+  const featuredImage = apiUrl
+    ? { url: apiUrl, altText: product.name, width: 1024, height: 1024 }
+    : product.image_asset_ref
+      ? mapImage(product.image_asset_ref, product.name)
+      : { url: `/products/${product.slug}.png`, altText: product.name, width: 1024, height: 1024 };
 
   return {
     id: product.id,
@@ -312,7 +315,7 @@ export function mapProduct(product: StorefrontProduct): Product {
     },
     variants,
     featuredImage,
-    images: [featuredImage],
+    images: apiUrl || product.image_asset_ref ? [featuredImage] : [featuredImage],
     seo: { title: product.name, description },
     tags: product.is_subscription ? ["subscription"] : [],
     updatedAt: "",
